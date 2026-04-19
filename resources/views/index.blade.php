@@ -426,15 +426,12 @@
                         <p class="text-sm text-slate-600 leading-relaxed mb-3">{{ $preview }}</p>
 
                         @if ($isLong)
-                            <button class="text-xs font-medium text-safe-500 hover:text-safe-700 flex items-center gap-1 transition-colors read-more-btn" aria-expanded="false">
+                            <a href="{{ route('anonymous-stories.show', $story) }}" class="text-xs font-medium text-safe-500 hover:text-safe-700 inline-flex items-center gap-1 transition-colors">
                                 Baca selengkapnya
                                 <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                                 </svg>
-                            </button>
-                            <div class="story-full mt-3">
-                                <p class="text-sm text-slate-600 leading-relaxed">{{ $story->story }}</p>
-                            </div>
+                            </a>
                         @endif
                     </article>
                 @empty

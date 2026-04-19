@@ -35,4 +35,11 @@ class MainController extends Controller
         return redirect()->to(route('home', absolute: false).'#solidaritas')
             ->with('story_submitted', true);
     }
+
+    public function showAnonymousStory(AnonymousStory $anonymousStory): View
+    {
+        return view('anonymous-stories.show', [
+            'story' => $anonymousStory,
+        ]);
+    }
 }

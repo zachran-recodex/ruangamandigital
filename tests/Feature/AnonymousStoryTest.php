@@ -32,3 +32,14 @@ test('anonymous story form submission stores to database', function () {
         'story' => 'Ini cerita anonim untuk pengujian via form.',
     ]);
 });
+
+test('anonymous story detail page can be rendered', function () {
+    $story = AnonymousStory::create([
+        'story' => 'Ini cerita anonim untuk halaman detail.',
+    ]);
+
+    $response = $this->get(route('anonymous-stories.show', $story));
+
+    $response->assertOk()
+        ->assertSee('Ini cerita anonim untuk halaman detail.');
+});
