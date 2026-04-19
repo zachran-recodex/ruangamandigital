@@ -8,7 +8,7 @@ Route::post('/anonymous-stories', [MainController::class, 'storeAnonymousStory']
 Route::get('/anonymous-stories/{anonymousStory}', [MainController::class, 'showAnonymousStory'])->name('anonymous-stories.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::livewire('dashboard', 'pages::dashboard')->name('dashboard');
 });
 
 require __DIR__.'/settings.php';
