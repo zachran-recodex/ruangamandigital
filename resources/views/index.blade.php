@@ -160,13 +160,13 @@
 
         /* Toast notification */
         .toast {
-            transform: translateY(20px);
+            transform: translate(-50%, -16px) scale(0.96);
             opacity: 0;
             transition: all 0.5s ease;
         }
 
         .toast.show {
-            transform: translateY(0);
+            transform: translate(-50%, 0) scale(1);
             opacity: 1;
         }
 
@@ -188,8 +188,8 @@
     <!-- ============================================ -->
     <!-- TOAST NOTIFICATION -->
     <!-- ============================================ -->
-    <div id="toast" class="toast fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-safe-700 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center gap-3 max-w-sm">
-        <svg class="w-5 h-5 text-calm-300 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <div id="toast" data-story-submitted="{{ session('story_submitted') ? '1' : '0' }}" class="toast fixed top-5 left-1/2 z-[100] bg-safe-900/95 text-white px-5 py-3 rounded-full shadow-xl flex items-center gap-3 max-w-sm backdrop-blur-md border border-white/10 pointer-events-none">
+        <svg class="w-5 h-5 text-calm-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span id="toast-msg" class="text-sm font-medium">Ceritamu telah tersimpan dengan aman.</span>
@@ -326,12 +326,6 @@
                                     <li>{{ $error }}</li>
                                 @endforeach
                             </ul>
-                        </div>
-                    @endif
-
-                    @if (session('story_submitted'))
-                        <div class="mb-6 rounded-2xl border border-calm-200 bg-calm-50/60 px-5 py-4">
-                            <p class="text-sm font-semibold text-calm-700">Ceritamu telah tersimpan dengan aman. Terima kasih atas keberanianmu.</p>
                         </div>
                     @endif
 
@@ -770,6 +764,11 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 4000);
+        }
+
+        const toastEl = document.getElementById('toast');
+        if (toastEl && toastEl.dataset.storySubmitted === '1') {
+            showToast('Ceritamu telah tersimpan dengan aman. Terima kasih atas keberanianmu.');
         }
 
         // --- Read more toggle for story cards ---
