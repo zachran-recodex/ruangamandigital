@@ -19,3 +19,16 @@ test('anonymous story can be stored', function () {
 
     $anonymousStory->delete();
 });
+
+test('anonymous story form submission stores to database', function () {
+    $response = $this->post(route('anonymous-stories.store'), [
+        'story' => 'Ini cerita anonim untuk pengujian via form.',
+        'anonConfirm' => '1',
+    ]);
+
+    $response->assertRedirect();
+
+    $this->assertDatabaseHas('anonymous_stories', [
+        'story' => 'Ini cerita anonim untuk pengujian via form.',
+    ]);
+});

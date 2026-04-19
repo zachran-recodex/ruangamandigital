@@ -318,7 +318,25 @@
 
                 <!-- Form Card -->
                 <div class="bg-white/80 backdrop-blur-sm rounded-3xl border border-safe-100 shadow-[0_4px_30px_rgba(0,0,0,0.04)] p-6 sm:p-8 md:p-10">
-                    <form id="storyForm" novalidate>
+                    @if ($errors->any())
+                        <div class="mb-6 rounded-2xl border border-warm-200 bg-warm-50/60 px-5 py-4">
+                            <p class="text-sm font-semibold text-warm-700 mb-2">Periksa kembali inputmu:</p>
+                            <ul class="list-disc pl-5 space-y-1 text-sm text-warm-700">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if (session('story_submitted'))
+                        <div class="mb-6 rounded-2xl border border-calm-200 bg-calm-50/60 px-5 py-4">
+                            <p class="text-sm font-semibold text-calm-700">Ceritamu telah tersimpan dengan aman. Terima kasih atas keberanianmu.</p>
+                        </div>
+                    @endif
+
+                    <form id="storyForm" method="POST" action="{{ route('anonymous-stories.store') }}" novalidate>
+                        @csrf
                         <!-- Textarea -->
                         <div class="mb-6">
                             <label for="story" class="block text-sm font-medium text-safe-800 mb-2">Ceritamu</label>
@@ -328,7 +346,7 @@
                                 rows="8"
                                 placeholder="Tuliskan isi hatimu di sini… Kata-katamu aman bersama kami."
                                 class="w-full px-5 py-4 bg-sand-50 border border-safe-200/60 rounded-2xl text-slate-700 placeholder:text-slate-300 leading-relaxed resize-y focus:border-safe-400 focus:ring-2 focus:ring-safe-100 transition-all duration-300"
-                                aria-describedby="story-hint"></textarea>
+                                aria-describedby="story-hint">{{ old('story') }}</textarea>
                             <p id="story-hint" class="mt-2 text-xs text-slate-400">Kamu bebas menulis sepanjang apa pun yang kamu butuhkan.</p>
                         </div>
 
@@ -339,7 +357,8 @@
                                     type="checkbox"
                                     id="anonConfirm"
                                     name="anonConfirm"
-                                    class="mt-0.5 w-5 h-5 rounded-md border-safe-300 text-safe-600 focus:ring-safe-400 focus:ring-offset-2 transition cursor-pointer">
+                                    class="mt-0.5 w-5 h-5 rounded-md border-safe-300 text-safe-600 focus:ring-safe-400 focus:ring-offset-2 transition cursor-pointer"
+                                    @checked(old('anonConfirm'))>
                                 <span class="text-sm text-slate-500 leading-relaxed group-hover:text-slate-600 transition-colors">
                                     Saya memahami bahwa <strong class="text-safe-700">tidak ada data pribadi, alamat IP, atau informasi identitas</strong> yang akan direkam atau disimpan oleh sistem ini.
                                 </span>
@@ -393,130 +412,42 @@
             <!-- Story Cards Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                <!-- Card 1 -->
-                <article class="bg-white/80 backdrop-blur-sm rounded-2xl border border-safe-100 p-6 hover:shadow-md hover:border-safe-200 transition-all duration-300 group">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-safe-200 to-calm-200 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-safe-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                            </svg>
+                @forelse ($stories ?? [] as $story)
+                    @php
+                        $isLong = \Illuminate\Support\Str::length($story->story) > 140;
+                        $preview = $isLong ? \Illuminate\Support\Str::limit($story->story, 140, '...') : $story->story;
+                    @endphp
+                    <article class="bg-white/80 backdrop-blur-sm rounded-2xl border border-safe-100 p-6 hover:shadow-md hover:border-safe-200 transition-all duration-300 group">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-safe-200 to-calm-200 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-safe-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-safe-800">Penyintas Anonim</p>
+                                <p class="text-xs text-slate-400">{{ $story->created_at?->diffForHumans() }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm font-semibold text-safe-800">Penyintas Anonim</p>
-                            <p class="text-xs text-slate-400">2 hari lalu</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-slate-600 leading-relaxed mb-3">Saya pernah mengira itu salah saya. Bahwa pakaian yang saya kenakan, cara saya tersenyum, adalah undangan. Tapi bukan. Tidak pernah...</p>
-                    <button class="text-xs font-medium text-safe-500 hover:text-safe-700 flex items-center gap-1 transition-colors read-more-btn" aria-expanded="false">
-                        Baca selengkapnya
-                        <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <div class="story-full mt-3">
-                        <p class="text-sm text-slate-600 leading-relaxed">Tapi bukan. Tidak pernah ada undangan dalam pelecehan. Butuh waktu bertahun-tahun untuk menyadarinya, dan saya bersyukur akhirnya menemukan ruang di mana saya bisa bicara tanpa rasa takut.</p>
-                    </div>
-                </article>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-3">{{ $preview }}</p>
 
-                <!-- Card 2 -->
-                <article class="bg-white/80 backdrop-blur-sm rounded-2xl border border-safe-100 p-6 hover:shadow-md hover:border-safe-200 transition-all duration-300 group">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-calm-200 to-safe-200 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-calm-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-safe-800">Penyintas Anonim</p>
-                            <p class="text-xs text-slate-400">5 hari lalu</p>
-                        </div>
+                        @if ($isLong)
+                            <button class="text-xs font-medium text-safe-500 hover:text-safe-700 flex items-center gap-1 transition-colors read-more-btn" aria-expanded="false">
+                                Baca selengkapnya
+                                <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="story-full mt-3">
+                                <p class="text-sm text-slate-600 leading-relaxed">{{ $story->story }}</p>
+                            </div>
+                        @endif
+                    </article>
+                @empty
+                    <div class="rounded-2xl border border-safe-100 bg-white/60 p-6 md:col-span-2 lg:col-span-3 text-center">
+                        <p class="text-sm text-slate-500">Belum ada cerita yang ditampilkan. Kamu bisa jadi yang pertama.</p>
                     </div>
-                    <p class="text-sm text-slate-600 leading-relaxed mb-3">Di kampus, dosen itu berkata itu hanya "candaan." Teman-teman menyuruh saya tidak terlalu sensitif. Tapi candaan yang membuat seseorang merasa kecil...</p>
-                    <button class="text-xs font-medium text-safe-500 hover:text-safe-700 flex items-center gap-1 transition-colors read-more-btn" aria-expanded="false">
-                        Baca selengkapnya
-                        <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <div class="story-full mt-3">
-                        <p class="text-sm text-slate-600 leading-relaxed">Tapi candaan yang membuat seseorang merasa kecil dan tidak aman bukan candaan — itu pelecehan. Saya belajar bahwa suara saya layak didengar, dan saya berhak merasa aman di ruang belajar saya.</p>
-                    </div>
-                </article>
-
-                <!-- Card 3 -->
-                <article class="bg-white/80 backdrop-blur-sm rounded-2xl border border-safe-100 p-6 hover:shadow-md hover:border-safe-200 transition-all duration-300 group">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-safe-300 to-calm-300 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-safe-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-safe-800">Penyintas Anonim</p>
-                            <p class="text-xs text-slate-400">1 minggu lalu</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-slate-600 leading-relaxed mb-3">Setelah bertahun-tahun diam, akhirnya saya menulis. Menulis bukan berarti saya sudah sembuh, tapi ini langkah pertama untuk tidak lagi menyimpan...</p>
-                    <button class="text-xs font-medium text-safe-500 hover:text-safe-700 flex items-center gap-1 transition-colors read-more-btn" aria-expanded="false">
-                        Baca selengkapnya
-                        <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <div class="story-full mt-3">
-                        <p class="text-sm text-slate-600 leading-relaxed">Menulis bukan berarti saya sudah sembuh, tapi ini langkah pertama untuk tidak lagi menyimpan semuanya sendirian. Untuk siapa pun yang membaca ini: ketahuilah bahwa keberanianmu untuk bicara sudah cukup.</p>
-                    </div>
-                </article>
-
-                <!-- Card 4 -->
-                <article class="bg-white/80 backdrop-blur-sm rounded-2xl border border-safe-100 p-6 hover:shadow-md hover:border-safe-200 transition-all duration-300 group">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-calm-200 to-safe-200 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-calm-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-safe-800">Penyintas Anonim</p>
-                            <p class="text-xs text-slate-400">1 minggu lalu</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-slate-600 leading-relaxed mb-3">Saya dilaporkan ke HRD malah saya yang diminta "menyelesaikan secara kekeluargaan." Padahal saya yang jadi korban. Normalisasi ini harus berhenti.</p>
-                    <button class="text-xs font-medium text-safe-500 hover:text-safe-700 flex items-center gap-1 transition-colors read-more-btn" aria-expanded="false">
-                        Baca selengkapnya
-                        <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <div class="story-full mt-3">
-                        <p class="text-sm text-slate-600 leading-relaxed">Normalisasi ini harus berhenti. Sekarang saya tahu ada UU TPKS yang melindungi saya. Tidak ada lagi "diselesaikan secara kekeluargaan" untuk kekerasan seksual.</p>
-                    </div>
-                </article>
-
-                <!-- Card 5 -->
-                <article class="bg-white/80 backdrop-blur-sm rounded-2xl border border-safe-100 p-6 hover:shadow-md hover:border-safe-200 transition-all duration-300 group">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-safe-200 to-calm-300 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-safe-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-safe-800">Penyintas Anonim</p>
-                            <p class="text-xs text-slate-400">2 minggu lalu</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-slate-600 leading-relaxed mb-3">Saya berani bicara karena akhirnya ada orang yang mendengarkan tanpa menyalahkan. Satu orang yang percaya bisa mengubah segalanya.</p>
-                    <button class="text-xs font-medium text-safe-500 hover:text-safe-700 flex items-center gap-1 transition-colors read-more-btn" aria-expanded="false">
-                        Baca selengkapnya
-                        <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <div class="story-full mt-3">
-                        <p class="text-sm text-slate-600 leading-relaxed">Satu orang yang percaya bisa mengubah segalanya. Jika kamu sedang membaca ini dan belum menemukan orang itu — saya percaya kamu. Ceritamu benar, perasaanmu valid.</p>
-                    </div>
-                </article>
+                @endforelse
 
                 <!-- Card 6 - CTA -->
                 <div class="rounded-2xl border-2 border-dashed border-safe-200 bg-safe-50/50 p-6 flex flex-col items-center justify-center text-center min-h-[240px]">
@@ -820,80 +751,15 @@
 
         storyInput.addEventListener('input', validateForm);
         anonCheckbox.addEventListener('change', validateForm);
+        validateForm();
 
         // --- Form submission ---
         storyForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            // Get story text
             const storyText = storyInput.value.trim();
-
-            if (!storyText || !anonCheckbox.checked) return;
-
-            // Add story card to gallery dynamically
-            addStoryCard(storyText);
-
-            // Reset form
-            storyInput.value = '';
-            anonCheckbox.checked = false;
-            submitBtn.disabled = true;
-
-            // Show toast
-            showToast('Ceritamu telah tersimpan dengan aman. Terima kasih atas keberanianmu.');
-
-            // Scroll to gallery
-            setTimeout(() => {
-                document.getElementById('solidaritas').scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }, 1000);
-        });
-
-        // --- Add new story card to gallery ---
-        function addStoryCard(text) {
-            const gallery = document.querySelector('#solidaritas .grid');
-            const ctaCard = gallery.lastElementChild; // The CTA card is last
-
-            const snippet = text.length > 120 ? text.substring(0, 120) + '...' : text;
-            const fullText = text.length > 120 ? text : '';
-            const needsReadMore = text.length > 120;
-
-            const card = document.createElement('article');
-            card.className = 'bg-white/80 backdrop-blur-sm rounded-2xl border border-safe-100 p-6 hover:shadow-md hover:border-safe-200 transition-all duration-300 group';
-            card.style.animation = 'gentleFadeUp 0.6s ease-out forwards';
-
-            const readMoreHTML = needsReadMore ? `
-        <button class="text-xs font-medium text-safe-500 hover:text-safe-700 flex items-center gap-1 transition-colors read-more-btn" aria-expanded="false">
-          Baca selengkapnya
-          <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div class="story-full mt-3">
-          <p class="text-sm text-slate-600 leading-relaxed">${fullText}</p>
-        </div>
-      ` : '';
-
-            card.innerHTML = `
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-safe-300 to-calm-300 flex items-center justify-center">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-safe-800">Penyintas Anonim</p>
-            <p class="text-xs text-slate-400">Baru saja</p>
-          </div>
-        </div>
-        <p class="text-sm text-slate-600 leading-relaxed mb-3">${snippet}</p>
-        ${readMoreHTML}
-      `;
-
-            // Insert before the CTA card
-            gallery.insertBefore(card, ctaCard);
-
-            // Attach read-more listener if needed
-            if (needsReadMore) {
-                attachReadMore(card.querySelector('.read-more-btn'));
+            if (!storyText || !anonCheckbox.checked) {
+                e.preventDefault();
             }
-        }
+        });
 
         // --- Toast notification ---
         function showToast(message) {
