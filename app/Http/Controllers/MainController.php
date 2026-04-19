@@ -38,7 +38,7 @@ class MainController extends Controller
 
     public function showAnonymousStory(AnonymousStory $anonymousStory): View
     {
-        return view('anonymous-stories.show', [
+        return view('show', [
             'story' => $anonymousStory,
         ]);
     }
